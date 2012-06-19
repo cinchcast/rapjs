@@ -1,0 +1,36 @@
+h1= title
+
+hr
+
+div you can embed this snippet on your site (you will need to include jquery as well)
+
+p &lt;script type=&quot;text/javascript&quot;&gt
+p var _evt = [];
+p function event(event_name,event_type){_evt.push({&quot;event_name&quot;:event_name,&quot;event_type&quot;:event_type})};
+p event(&quot;page-loaded&quot;,&quot;page-event&quot;);
+p      (function() {
+p       var r = document.createElement(&#39;script&#39;); r.type = &#39;text/javascript&#39;; r.async = true;
+p       r.src = &quot;http://rapjs.nodejitsu.com/javascripts/reporting.js&quot;;
+p       var s = document.getElementsByTagName(&#39;script&#39;)[0]; s.parentNode.insertBefore(r, s);
+p })();
+p &lt;/script&gt;
+
+hr
+
+h1 examples
+
+| <a href="simplelisten.html">Simple Listen</a> - allows you to see raw data from events
+p
+| <a href="reporting.html">Reporting</a> - pretty reporting views of some events in real-time
+p
+| <a href="realtime.html">Realtime</a> - active visitors on a page in real-time
+p
+| <a href="player.html">Player Player</a> - a media player that will post a few events ("page-load", "onplay", "completed")
+p
+| <a href="browsers.html">Browsers</a> - browsers :)
+p
+| <a href="exceptions.html">Exceptions</a> - eventing client-side javascript errors
+p
+| <a href="ambient_awareness.html">Ambient Awareness</a> - it can get lonely in the NOC (network operations center)...
+p
+| <a href="polling.html">Polling</a> - do a survey -> see <a href="polling_results.html">Polling Results</a> here

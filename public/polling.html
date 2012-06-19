@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>polling</title>
+    <script src="/javascripts/jquery-1.7.2.min.js"></script>
+    <script type="text/javascript">
+        function SubmitSurvey(surveyName) {
+            event($('input[name='+surveyName+']:checked').val(),"polling_event");
+            $("#Survey").fadeOut("slow", function() {
+                $("#SurveyResult").show();
+            });
+        }
+
+        function SurveyAgain() {
+            $("#SurveyResult").hide();
+            $("#Survey").show();
+        }
+    </script>
+</head>
+<body>
+<h1>polling</h1>
+
+<div id="Survey">
+    <p>What's ur favorite sport?</p>
+
+    <input type="radio" name="survey1" id="Football" value="Football" /> Football
+    <input type="radio" name="survey1" id="Baseball" value="Baseball" /> Baseball
+    <input type="radio" name="survey1" id="Hockey" value="Hockey" /> Hockey
+    <input type="radio" name="survey1" id="Soccer" value="Soccer" /> Soccer
+
+    <p>
+        <input type="button" value="Submit" onclick="SubmitSurvey('survey1');" />
+    </p>
+</div>
+<div id="SurveyResult" style="display: none;">thanks for participating <input type="button" value="Again!" onclick="SurveyAgain();" /></div>
+
+<script type="text/javascript">
+
+    var _evt = [];
+
+    function event(event_name,event_type){_evt.push({"event_name":event_name,"event_type":event_type})};
+
+    (function() {
+
+        var r = document.createElement('script'); r.type = 'text/javascript'; r.async = true;
+
+        r.src = "/javascripts/reporting.js";
+
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(r, s);
+
+    })();
+
+</script>
+</body>
+</html>

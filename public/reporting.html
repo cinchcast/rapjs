@@ -1,0 +1,116 @@
+<html>
+<head>
+<title>reporting</title>
+<script src="/javascripts/jquery-1.7.2.min.js"></script>
+<script src="/javascripts/highcharts/highcharts.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script type="text/javascript">
+
+var chartWriter = {
+    charts: [], // chart object schema: { eventType: eventTypeName, eventNames: ['eventName1'],
+                // eventDataPointNames: ['eventDataPointName1']
+                // eventDataCounters: [ "eventName": [ eventDataPointName: 1 ] ],
+                // eventFiringRecords: [eventData], highChart: highChart }
+    containsChart: function (eventType) {
+        for(i=0; i<chartWriter.charts.length; i++) {
+            if (typeof chartWriter.charts[i].eventType != 'undefined' &&
+                chartWriter.charts[i].eventType != eventType)
+                continue;
+            return chartWriter.charts[i];
+        }
+        return false;
+    },
+    createNewChart: function (eventData) {
+        if (chartWriter.containsChart(eventData.type)) return false;
+        var chart = {   eventType: eventData.type, eventNames: [eventData.name], eventDataPointNames: Object.keys(eventData.data),
+                        highChart: {}, eventFiringRecords: [eventData] };
+
+        $('#charts').append('<div id="' + chart.eventType + '"></div');
+        highChart = new Highcharts.Chart({
+            chart: { renderTo: chart.eventType, type: 'bar' },
+            title: { text: 'App Events' },
+            subtitle: { text: 'Event type: ' + chart.eventType },
+            xAxis: { categories: chart.eventNames, title: { text: null } },
+            yAxis: { min: 0, title: { text: 'Event properties', align: 'high' }, labels: { overflow: 'justify' } },
+            tooltip: { formatter: function() { return ''+ this.series.name +': '+ this.y +' millions'; } },
+            plotOptions: { bar: { dataLabels: { enabled: true } } },
+            legend: { layout: 'vertical', align: 'right', verticalAlign: 'top', x: -100, y: 100, floating: true, borderWidth: 1, backgroundColor: '#FFFFFF', shadow: true },
+            credits: { enabled: false }
+        });
+        chart.highChart = highChart;
+        chartWriter.charts.push(chart);
+        chartWriter.recalculateChart(chart);
+    },
+    addEventToChart: function(eventData) {
+        eventData = JSON.parse(eventData);
+        var chartIfExists = chartWriter.containsChart(eventData.type);
+        if (chartIfExists) {
+            if (chartIfExists.eventNames.indexOf(eventData.name) == -1)
+                chartIfExists.eventNames.push(eventData.name);
+            chartIfExists.eventFiringRecords.push(eventData);
+            chartWriter.recalculateChart(chartIfExists);
+        } else {
+            chartWriter.createNewChart(eventData);
+        }
+    },
+    recalculateChart: function(chart) {
+        var chartIfExists = chartWriter.containsChart(chart.eventType);
+        if (chartIfExists) {
+            if (chartIfExists.highChart.series) {
+                while (chartIfExists.highChart.series.length > 0)
+                    chartIfExists.highChart.series[0].remove(false);
+            }
+            chartIfExists.highChart.xAxis[0].setCategories(chart.eventNames, false);
+
+            //clear data point numbers
+            for (var key in chartIfExists.eventDataCounters) {
+                for(innerKey in chartIfExists.eventDataCounters[key]) {
+                    chartIfExists.eventDataCounters[key][innerKey] = 0;
+                }
+            }
+
+            var eventFiringCounters = chartWriter.getEventDataPoints(chartIfExists.eventFiringRecords);
+
+            for (i=0; i<chartIfExists.eventDataPointNames.length ;i++) {
+                var dataPointsArray = [];
+                for (j=0; j<chartIfExists.eventNames.length; j++) {
+                    if (typeof dataPointsArray[j] == 'undefined') dataPointsArray[j] = 0;
+                    dataPointsArray[j] += eventFiringCounters[chartIfExists.eventNames[j]][chartIfExists.eventDataPointNames[i]];
+                }
+                chartIfExists.highChart.addSeries({ name: chartIfExists.eventDataPointNames[i], data:dataPointsArray }, true, true);
+            }
+        }
+    },
+    getEventDataPoints: function (eventFiringRecords) {
+        var eventFiringCounters = [];
+        for (i=0; i<eventFiringRecords.length; i++) {
+            var eventName = eventFiringRecords[i].name;
+            if (typeof eventFiringCounters[eventName] == 'undefined')
+                eventFiringCounters[eventName] = [];
+            for (var key in eventFiringRecords[i].data) {
+                var eventDataPointName = key;
+                if (typeof eventFiringCounters[eventName][eventDataPointName] == 'undefined')
+                    eventFiringCounters[eventName][eventDataPointName] = 0;
+                eventFiringCounters[eventName][eventDataPointName]++;
+            }
+        }
+        return eventFiringCounters;
+    }
+};
+
+var socket = io.connect();
+
+socket.on('recv-action', function(data) {
+    console.log('action received');
+    chartWriter.addEventToChart(data);
+	//var now = new Date();
+    //$("#messageBoard").append("<div>time recv'd (epoch): " + (new Date()).getTime() + " data: " + data.message + "</div>");
+});
+</script>
+</head>
+<body>
+<h1>reporting</h1>
+<div id="charts"></div>
+<div id="messageBoard"></div>
+</body>
+</html>

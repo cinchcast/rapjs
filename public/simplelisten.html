@@ -1,0 +1,19 @@
+<html>
+<head>
+<title>simplelisten</title>
+<script src="javascripts/jquery-1.7.2.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script type="text/javascript">
+var socket = io.connect();
+
+socket.on('recv-action', function(data) {
+	$("#messageBoard").append("<div>data: " + JSON.stringify(data) + "</div>");
+});
+
+</script>
+</head>
+<body>
+<h1>simple listen</h1>
+<div id="messageBoard"></div>
+</body>
+</html>
